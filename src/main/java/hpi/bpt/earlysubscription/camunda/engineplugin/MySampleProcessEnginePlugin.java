@@ -7,7 +7,6 @@ import org.camunda.bpm.engine.ProcessEngine;
 import org.camunda.bpm.engine.impl.bpmn.parser.BpmnParseListener;
 import org.camunda.bpm.engine.impl.cfg.ProcessEngineConfigurationImpl;
 import org.camunda.bpm.engine.impl.cfg.ProcessEnginePlugin;
-import org.camunda.bpm.engine.impl.persistence.deploy.Deployer;
 
 public class MySampleProcessEnginePlugin implements ProcessEnginePlugin {
 
@@ -20,16 +19,6 @@ public class MySampleProcessEnginePlugin implements ProcessEnginePlugin {
 			processEngineConfiguration.setCustomPostBPMNParseListeners(postParseListeners);
 		}
 		postParseListeners.add(new MySampleParseListener());
-
-		// Deployers
-		List<Deployer> postDeployers = processEngineConfiguration.getCustomPostDeployers();
-
-		if (postDeployers == null) {
-			postDeployers = new ArrayList<Deployer>();
-			processEngineConfiguration.setCustomPostDeployers(postDeployers);
-		}
-
-		postDeployers.add(new MyPostDeployer());
 
 	}
 

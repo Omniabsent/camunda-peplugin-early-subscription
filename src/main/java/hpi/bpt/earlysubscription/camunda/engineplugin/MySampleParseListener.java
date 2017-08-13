@@ -1,17 +1,16 @@
 package hpi.bpt.earlysubscription.camunda.engineplugin;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 
-import org.camunda.bpm.engine.delegate.ExecutionListener;
 import org.camunda.bpm.engine.impl.bpmn.parser.AbstractBpmnParseListener;
 import org.camunda.bpm.engine.impl.bpmn.parser.BpmnParseListener;
 import org.camunda.bpm.engine.impl.persistence.entity.ProcessDefinitionEntity;
 import org.camunda.bpm.engine.impl.pvm.process.ActivityImpl;
 import org.camunda.bpm.engine.impl.pvm.process.ScopeImpl;
 import org.camunda.bpm.engine.impl.util.xml.Element;
-
-import hpi.bpt.earlysubscription.camunda.engineplugin.executionlisteners.SubscriptionListener;
+import org.camunda.bpm.engine.impl.util.xml.Namespace;
 
 public class MySampleParseListener extends AbstractBpmnParseListener implements BpmnParseListener {
 
@@ -32,39 +31,6 @@ public class MySampleParseListener extends AbstractBpmnParseListener implements 
 
 		// attach createBufferListener if flexsub extension is present
 
-		// get the <extensionElements ...> element from the service task
-		Element extensionElement = serviceTaskElement.element("extensionElements");
-		if (extensionElement != null) {
-
-			// get the <camunda:properties ...> element from the service task
-			Element propertiesElement = extensionElement.element("properties");
-			if (propertiesElement != null) {
-
-				// get list of <camunda:property ...> elements from the service
-				// task
-				List<Element> propertyList = propertiesElement.elements("property");
-				for (Element property : propertyList) {
-
-					// get the name and the value of the extension property
-					// element
-					String name = property.attribute("name");
-					String value = property.attribute("value");
-
-					if (name.equals("messageId")) {
-						String messageId = value;
-						LOGGER.info("Service Task should subscribe to message id " + messageId);
-
-						activity.addListener(ExecutionListener.EVENTNAME_END, new SubscriptionListener(value));
-					}
-
-					// ProgressLoggingExecutionListener
-					// progressLoggingExecutionListener = new
-					// ProgressLoggingExecutionListener(
-					// value);
-				}
-			}
-		}
-
 	}
 
 	@Override
@@ -77,10 +43,11 @@ public class MySampleParseListener extends AbstractBpmnParseListener implements 
 	}
 
 	public void parseRootElement(Element rootElement, List<ProcessDefinitionEntity> processDefinitions) {
-		// intercept after root element finished parsing (entire process
-		// available)
 
+		// START EVENT
 		// for each cep message start event: do direct subscription now
+		List<Element> messages = rootElement.elements("message");
+		System.out.println("number of messages found: " + messages.size());
 
 		// for each boundary message event
 		// and for each receive task
@@ -90,15 +57,53 @@ public class MySampleParseListener extends AbstractBpmnParseListener implements 
 		// (2) if subscr. on depl: issue createBuffer (this could also be done
 		// simply for each Message? watch out for startEvent)
 
-		// can I use a query concept on Element?
+		// boundary/interm message event
+		// intermediateCatchEvent | boundaryEvent
+		// find these elements
+		List<Element> els = elementsByTagRecursive(rootElement, "intermediateCatchEvent");
+
+		for (Element el : els) {
+			// extract 'messageRef' from "messageEventDefinition"
+			String mref = el.element("messageEventDefinition").attribute("messageRef");
+			System.out.println("messageRef is " + mref);
+
+			// get subscriptionTime | use constants in SubscriptionEngine
+			// attach listeners for subscription and unsubscr
+			// extract query
+
+			// attach listeners for createBuffer, deleteQuery
+		}
 
 	}
 
-	// parseBoundaryEvent(Element boundaryEventElement, ScopeImpl scopeElement,
-	// ActivityImpl nestedActivity)
+	private List<Element> elementsByTagRecursive(Element rootElement, String tagName) {
+		List<Element> resultElements = new ArrayList<Element>();
+		resultElements.addAll(rootElement.elements(tagName));
+		for (Element el : rootElement.elements()) {
+			resultElements.addAll(elementsByTagRecursive(el, tagName));
+		}
 
-	// parseReceiveTask(Element receiveTaskElement, ScopeImpl scope,
-	// ActivityImpl activity)
+		return resultElements;
+	}
 
-	// parseEndEvent: deleteQuery if not <subscr on depl>
+	private String getExtensionValue(Element el, String propertyName) {
+		// get the <extensionElements ...> element from the service task
+		Element extensionElement = el.elementNS(new Namespace("flexsub"), "extensionElements");
+		if (extensionElement != null) {
+
+			// get the <camunda:properties ...> element from the service task
+			Element propertiesElement = extensionElement.elementNS(new Namespace("flexsub"), "properties");
+			if (propertiesElement != null) {
+
+				// get list of <camunda:property ...> elements from the service
+				// task
+				Element prop = propertiesElement.elementNS(new Namespace("flexsub"), "propertyName");
+				if (prop != null) {
+					return prop.getText();
+				}
+			}
+		}
+		return null; // if nothing found
+	}
+
 }

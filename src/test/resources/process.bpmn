@@ -1,14 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" id="Definitions_1" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="1.6.0">
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" id="Definitions_1" xmlns:flexsub="http://www.extensions.bpmn/flexsub" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="1.6.0">
   <bpmn:process id="earlysubscription.camunda.engineplugin" name="earlysubscription.camunda.engineplugin" isExecutable="true">
     <bpmn:startEvent id="StartEventProcessStarted" name="Process&#10;started">
       <bpmn:outgoing>SequenceFlow1</bpmn:outgoing>
     </bpmn:startEvent>
     <bpmn:endEvent id="EndEventProcessEnded" name="Process&#10;ended">
-      <bpmn:incoming>SequenceFlow_01dg61x</bpmn:incoming>
-      <bpmn:incoming>SequenceFlow_0uie17q</bpmn:incoming>
-      <bpmn:incoming>SequenceFlow_0rpdzgu</bpmn:incoming>
-      <bpmn:incoming>SequenceFlow_0i38tx2</bpmn:incoming>
+      <bpmn:incoming>SequenceFlow_13hd23h</bpmn:incoming>
+      <bpmn:incoming>SequenceFlow_1385wii</bpmn:incoming>
     </bpmn:endEvent>
     <bpmn:sequenceFlow id="SequenceFlow1" sourceRef="StartEventProcessStarted" targetRef="Task_0f4srr4" />
     <bpmn:userTask id="Task_DoSomething" name="Do something" camunda:assignee="demo" camunda:candidateGroups="management">
@@ -17,7 +15,7 @@
     </bpmn:userTask>
     <bpmn:sequenceFlow id="SequenceFlow_07x1xu4" sourceRef="Task_DoSomething" targetRef="ExclusiveGateway_1r5hqy3" />
     <bpmn:sequenceFlow id="SequenceFlow_0bepw69" sourceRef="Task_0f4srr4" targetRef="Task_DoSomething" />
-    <bpmn:sequenceFlow id="SequenceFlow_01dg61x" sourceRef="IntermediateThrowEvent_0fiso21" targetRef="EndEventProcessEnded" />
+    <bpmn:sequenceFlow id="SequenceFlow_01dg61x" sourceRef="IntermediateThrowEvent_0fiso21" targetRef="Task_receive" />
     <bpmn:intermediateCatchEvent id="IntermediateThrowEvent_0fiso21" name="in svc task">
       <bpmn:incoming>SequenceFlow_15wh7pu</bpmn:incoming>
       <bpmn:outgoing>SequenceFlow_01dg61x</bpmn:outgoing>
@@ -32,15 +30,15 @@
       <bpmn:outgoing>SequenceFlow_1kiberh</bpmn:outgoing>
     </bpmn:parallelGateway>
     <bpmn:sequenceFlow id="SequenceFlow_109h8ss" sourceRef="ExclusiveGateway_1r5hqy3" targetRef="IntermediateThrowEvent_11ldbkf" />
-    <bpmn:sequenceFlow id="SequenceFlow_0uie17q" sourceRef="IntermediateThrowEvent_11ldbkf" targetRef="EndEventProcessEnded" />
+    <bpmn:sequenceFlow id="SequenceFlow_0uie17q" sourceRef="IntermediateThrowEvent_11ldbkf" targetRef="Task_receive" />
     <bpmn:intermediateCatchEvent id="IntermediateThrowEvent_11ldbkf" name="on Depl">
       <bpmn:incoming>SequenceFlow_109h8ss</bpmn:incoming>
       <bpmn:outgoing>SequenceFlow_0uie17q</bpmn:outgoing>
       <bpmn:messageEventDefinition messageRef="Message_03jqjaw" />
     </bpmn:intermediateCatchEvent>
     <bpmn:sequenceFlow id="SequenceFlow_01y5j1c" sourceRef="ExclusiveGateway_1r5hqy3" targetRef="IntermediateThrowEvent_0nxgtal" />
-    <bpmn:sequenceFlow id="SequenceFlow_0rpdzgu" sourceRef="IntermediateThrowEvent_0nxgtal" targetRef="EndEventProcessEnded" />
-    <bpmn:sequenceFlow id="SequenceFlow_0i38tx2" sourceRef="IntermediateThrowEvent_1c0zbwr" targetRef="EndEventProcessEnded" />
+    <bpmn:sequenceFlow id="SequenceFlow_0rpdzgu" sourceRef="IntermediateThrowEvent_0nxgtal" targetRef="Task_receive" />
+    <bpmn:sequenceFlow id="SequenceFlow_0i38tx2" sourceRef="IntermediateThrowEvent_1c0zbwr" targetRef="Task_receive" />
     <bpmn:intermediateCatchEvent id="IntermediateThrowEvent_0nxgtal" name="default">
       <bpmn:incoming>SequenceFlow_01y5j1c</bpmn:incoming>
       <bpmn:outgoing>SequenceFlow_0rpdzgu</bpmn:outgoing>
@@ -61,35 +59,52 @@
       <bpmn:incoming>SequenceFlow1</bpmn:incoming>
       <bpmn:outgoing>SequenceFlow_0bepw69</bpmn:outgoing>
     </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="SequenceFlow_13hd23h" sourceRef="Task_receive" targetRef="EndEventProcessEnded" />
+    <bpmn:receiveTask id="Task_receive" name="receive" messageRef="Message_0kvs0kt">
+      <bpmn:incoming>SequenceFlow_0i38tx2</bpmn:incoming>
+      <bpmn:incoming>SequenceFlow_0rpdzgu</bpmn:incoming>
+      <bpmn:incoming>SequenceFlow_0uie17q</bpmn:incoming>
+      <bpmn:incoming>SequenceFlow_01dg61x</bpmn:incoming>
+      <bpmn:outgoing>SequenceFlow_13hd23h</bpmn:outgoing>
+    </bpmn:receiveTask>
+    <bpmn:sequenceFlow id="SequenceFlow_1385wii" sourceRef="BoundaryEvent_1lip643" targetRef="EndEventProcessEnded" />
+    <bpmn:boundaryEvent id="BoundaryEvent_1lip643" attachedToRef="Task_receive">
+      <bpmn:outgoing>SequenceFlow_1385wii</bpmn:outgoing>
+      <bpmn:messageEventDefinition messageRef="Message_03jqjaw" />
+    </bpmn:boundaryEvent>
   </bpmn:process>
   <bpmn:message id="Message_0cdznnq" name="Msg-Subscr-On-SvcTask">
     <bpmn:extensionElements>
-      <camunda:properties>
-        <camunda:property name="EventQuery" value="SvcTask" />
-        <camunda:property name="SubscriptionTime" value="Explicit" />
-      </camunda:properties>
+      <flexsub:subscriptionDefinition>
+        <flexsub:eventQuery>select * from eurotunnel</flexsub:eventQuery>
+        <flexsub:subscriptionTime>Process Deployment</flexsub:subscriptionTime>
+        <flexsub:bufferPolicies>
+          <flexsub:consumptionPolicy>consume</flexsub:consumptionPolicy>
+        </flexsub:bufferPolicies>
+      </flexsub:subscriptionDefinition>
     </bpmn:extensionElements>
+
   </bpmn:message>
   <bpmn:message id="Message_03jqjaw" name="Msg-Subscr-On-Depl">
     <bpmn:extensionElements>
-      <camunda:properties>
-        <camunda:property name="EventQuery" value="Depl" />
-        <camunda:property name="SubscriptionTime" value="ProcessDeployment" />
-      </camunda:properties>
+      <flexsub:properties>
+        <flexsub:property name="flexsub:EventQuery" value="Depl" />
+        <flexsub:property name="flexsub:SubscriptionTime" value="ProcessDeployment" />
+      </flexsub:properties>
     </bpmn:extensionElements>
   </bpmn:message>
   <bpmn:message id="Message_05qgbwh" name="Msg-Subsc-On-Inst">
     <bpmn:extensionElements>
       <camunda:properties>
-        <camunda:property name="EventQuery" value="Inst" />
-        <camunda:property name="SubscriptionTime" value="ProcessInstantiation" />
+        <camunda:property name="flexsub:EventQuery" value="Inst" />
+        <camunda:property name="flexsub:SubscriptionTime" value="ProcessInstantiation" />
       </camunda:properties>
     </bpmn:extensionElements>
   </bpmn:message>
   <bpmn:message id="Message_0kvs0kt" name="Msg-Subscr-Default">
     <bpmn:extensionElements>
       <camunda:properties>
-        <camunda:property name="EventQuery" value="Default" />
+        <camunda:property name="flexsub:EventQuery" value="Default" />
       </camunda:properties>
     </bpmn:extensionElements>
   </bpmn:message>
@@ -99,9 +114,9 @@
         <dc:Bounds x="173" y="102" width="36" height="36" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="EndEvent_0fkea3f_di" bpmnElement="EndEventProcessEnded">
-        <dc:Bounds x="858" y="102" width="36" height="36" />
+        <dc:Bounds x="1078" y="102" width="36" height="36" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="855" y="138" width="41" height="24" />
+          <dc:Bounds x="1076" y="60" width="40" height="25" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNEdge id="SequenceFlow_08va5r8_di" bpmnElement="SequenceFlow1">
@@ -132,7 +147,7 @@
         <di:waypoint xsi:type="dc:Point" x="767" y="169" />
         <di:waypoint xsi:type="dc:Point" x="813" y="169" />
         <di:waypoint xsi:type="dc:Point" x="813" y="120" />
-        <di:waypoint xsi:type="dc:Point" x="858" y="120" />
+        <di:waypoint xsi:type="dc:Point" x="895" y="120" />
         <bpmndi:BPMNLabel>
           <dc:Bounds x="828" y="144.5" width="0" height="0" />
         </bpmndi:BPMNLabel>
@@ -167,11 +182,11 @@
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="SequenceFlow_0uie17q_di" bpmnElement="SequenceFlow_0uie17q">
         <di:waypoint xsi:type="dc:Point" x="767" y="-19" />
-        <di:waypoint xsi:type="dc:Point" x="813" y="-19" />
-        <di:waypoint xsi:type="dc:Point" x="813" y="120" />
-        <di:waypoint xsi:type="dc:Point" x="858" y="120" />
+        <di:waypoint xsi:type="dc:Point" x="826" y="-19" />
+        <di:waypoint xsi:type="dc:Point" x="826" y="92" />
+        <di:waypoint xsi:type="dc:Point" x="895" y="92" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="828" y="50.5" width="0" height="0" />
+          <dc:Bounds x="841" y="36.5" width="0" height="0" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNShape id="IntermediateCatchEvent_0krnhke_di" bpmnElement="IntermediateThrowEvent_11ldbkf">
@@ -190,20 +205,20 @@
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="SequenceFlow_0rpdzgu_di" bpmnElement="SequenceFlow_0rpdzgu">
         <di:waypoint xsi:type="dc:Point" x="767" y="240" />
-        <di:waypoint xsi:type="dc:Point" x="813" y="240" />
-        <di:waypoint xsi:type="dc:Point" x="813" y="120" />
-        <di:waypoint xsi:type="dc:Point" x="858" y="120" />
+        <di:waypoint xsi:type="dc:Point" x="826" y="240" />
+        <di:waypoint xsi:type="dc:Point" x="826" y="139" />
+        <di:waypoint xsi:type="dc:Point" x="895" y="139" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="828" y="180" width="0" height="0" />
+          <dc:Bounds x="841" y="189.5" width="0" height="0" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="SequenceFlow_0i38tx2_di" bpmnElement="SequenceFlow_0i38tx2">
         <di:waypoint xsi:type="dc:Point" x="767" y="72" />
         <di:waypoint xsi:type="dc:Point" x="813" y="72" />
-        <di:waypoint xsi:type="dc:Point" x="813" y="120" />
-        <di:waypoint xsi:type="dc:Point" x="858" y="120" />
+        <di:waypoint xsi:type="dc:Point" x="813" y="106" />
+        <di:waypoint xsi:type="dc:Point" x="895" y="106" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="828" y="96" width="0" height="0" />
+          <dc:Bounds x="828" y="89" width="0" height="0" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNShape id="IntermediateCatchEvent_09a929k_di" bpmnElement="IntermediateThrowEvent_0nxgtal">
@@ -228,6 +243,31 @@
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNShape id="ServiceTask_05k1eyr_di" bpmnElement="Task_0f4srr4">
         <dc:Bounds x="282" y="80" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="SequenceFlow_13hd23h_di" bpmnElement="SequenceFlow_13hd23h">
+        <di:waypoint xsi:type="dc:Point" x="995" y="120" />
+        <di:waypoint xsi:type="dc:Point" x="1078" y="120" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1037" y="105" width="0" height="0" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="ReceiveTask_1ogo8h4_di" bpmnElement="Task_receive">
+        <dc:Bounds x="895" y="80" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="SequenceFlow_1385wii_di" bpmnElement="SequenceFlow_1385wii">
+        <di:waypoint xsi:type="dc:Point" x="948" y="178" />
+        <di:waypoint xsi:type="dc:Point" x="948" y="215" />
+        <di:waypoint xsi:type="dc:Point" x="1096" y="215" />
+        <di:waypoint xsi:type="dc:Point" x="1096" y="138" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1022" y="200" width="0" height="0" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="BoundaryEvent_1btcadh_di" bpmnElement="BoundaryEvent_1lip643">
+        <dc:Bounds x="930" y="142" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="948" y="178" width="0" height="0" />
+        </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
     </bpmndi:BPMNPlane>
   </bpmndi:BPMNDiagram>
