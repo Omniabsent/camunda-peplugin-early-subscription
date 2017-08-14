@@ -10,11 +10,10 @@ import org.camunda.bpm.engine.impl.persistence.entity.ProcessDefinitionEntity;
 import org.camunda.bpm.engine.impl.pvm.process.ActivityImpl;
 import org.camunda.bpm.engine.impl.pvm.process.ScopeImpl;
 import org.camunda.bpm.engine.impl.util.xml.Element;
-import org.camunda.bpm.engine.impl.util.xml.Namespace;
 
-public class MySampleParseListener extends AbstractBpmnParseListener implements BpmnParseListener {
+public class FlexibleSubscriptionParseListener extends AbstractBpmnParseListener implements BpmnParseListener {
 
-	private final Logger LOGGER = Logger.getLogger(MySampleParseListener.class.getName());
+	private final Logger LOGGER = Logger.getLogger(FlexibleSubscriptionParseListener.class.getName());
 
 	@Override
 	public void parseStartEvent(Element startEventElement, ScopeImpl scope, ActivityImpl startEvent) {
@@ -67,12 +66,43 @@ public class MySampleParseListener extends AbstractBpmnParseListener implements 
 			String mref = el.element("messageEventDefinition").attribute("messageRef");
 			System.out.println("messageRef is " + mref);
 
-			// get subscriptionTime | use constants in SubscriptionEngine
-			// attach listeners for subscription and unsubscr
-			// extract query
+			// get subscriptionTime
+			// TODO: get message for messageRef
+			Element refMessageElement = null;
+			SubscriptionDefinition sd = getSubscriptionDefinition(refMessageElement);
 
 			// attach listeners for createBuffer, deleteQuery
+			// TODO: use constants in SubscriptionEngine
+			switch (sd.subscriptionTime) {
+			case "Process Deployment":
+				// if on depl, createBuffer now
+
+				break;
+			case "1":
+				//
+				break;
+			case "2":
+				//
+				break;
+			case "3":
+				//
+				break;
+			default:
+				// unknown
+			}
+
+			// attach listeners for subscription and unsubscr
+			// in every case attach a subscribe and unsubscr listener at start
+			// and end
+
 		}
+
+		// things to do at process start and end
+		ProcessDefinitionEntity thisProcess = processDefinitions.get(0);
+		// thisProcess.addExecutionListener(eventName, executionListener);
+
+		// considering that process deployments are rarely completely deleted in
+		// camunda, we did not implement the query deletion for on deployment
 
 	}
 
@@ -86,24 +116,36 @@ public class MySampleParseListener extends AbstractBpmnParseListener implements 
 		return resultElements;
 	}
 
+	private SubscriptionDefinition getSubscriptionDefinition(Element el) {
+		SubscriptionDefinition sd = new SubscriptionDefinition();
+		// fill with data
+		sd.eventQuery = "my test query";
+		sd.subscriptionTime = "Process Deployment";
+		return sd;
+	}
+
 	private String getExtensionValue(Element el, String propertyName) {
 		// get the <extensionElements ...> element from the service task
-		Element extensionElement = el.elementNS(new Namespace("flexsub"), "extensionElements");
+		Element extensionElement = el.element("extensionElements");
 		if (extensionElement != null) {
 
 			// get the <camunda:properties ...> element from the service task
-			Element propertiesElement = extensionElement.elementNS(new Namespace("flexsub"), "properties");
+			Element propertiesElement = extensionElement.element("properties");
 			if (propertiesElement != null) {
 
 				// get list of <camunda:property ...> elements from the service
 				// task
-				Element prop = propertiesElement.elementNS(new Namespace("flexsub"), "propertyName");
+				Element prop = propertiesElement.element("propertyName");
 				if (prop != null) {
 					return prop.getText();
 				}
 			}
 		}
 		return null; // if nothing found
+	}
+
+	private class SubscriptionDefinition {
+		public String eventQuery, subscriptionTime, bufferlifetime, buffersize, bufferorder, bufferconsumption;
 	}
 
 }

@@ -76,8 +76,8 @@
   <bpmn:message id="Message_0cdznnq" name="Msg-Subscr-On-SvcTask">
     <bpmn:extensionElements>
       <flexsub:subscriptionDefinition>
-        <flexsub:eventQuery>select * from eurotunnel</flexsub:eventQuery>
-        <flexsub:subscriptionTime>Process Deployment</flexsub:subscriptionTime>
+        <flexsub:eventQuery>select on svc task</flexsub:eventQuery>
+        <flexsub:subscriptionTime>Manual</flexsub:subscriptionTime>
         <flexsub:bufferPolicies>
           <flexsub:consumptionPolicy>consume</flexsub:consumptionPolicy>
         </flexsub:bufferPolicies>
@@ -87,25 +87,26 @@
   </bpmn:message>
   <bpmn:message id="Message_03jqjaw" name="Msg-Subscr-On-Depl">
     <bpmn:extensionElements>
-      <flexsub:properties>
-        <flexsub:property name="flexsub:EventQuery" value="Depl" />
-        <flexsub:property name="flexsub:SubscriptionTime" value="ProcessDeployment" />
-      </flexsub:properties>
+      <flexsub:subscriptionDefinition>
+        <flexsub:eventQuery>depl</flexsub:eventQuery>
+        <flexsub:subscriptionTime>Process Deployment</flexsub:subscriptionTime>
+      </flexsub:subscriptionDefinition>
     </bpmn:extensionElements>
   </bpmn:message>
   <bpmn:message id="Message_05qgbwh" name="Msg-Subsc-On-Inst">
     <bpmn:extensionElements>
-      <camunda:properties>
-        <camunda:property name="flexsub:EventQuery" value="Inst" />
-        <camunda:property name="flexsub:SubscriptionTime" value="ProcessInstantiation" />
-      </camunda:properties>
+      <flexsub:subscriptionDefinition>
+        <flexsub:eventQuery>inst</flexsub:eventQuery>
+        <flexsub:subscriptionTime>Process Instantiation</flexsub:subscriptionTime>
+      </flexsub:subscriptionDefinition>
     </bpmn:extensionElements>
   </bpmn:message>
   <bpmn:message id="Message_0kvs0kt" name="Msg-Subscr-Default">
     <bpmn:extensionElements>
-      <camunda:properties>
-        <camunda:property name="flexsub:EventQuery" value="Default" />
-      </camunda:properties>
+      <flexsub:subscriptionDefinition>
+        <flexsub:eventQuery>bpmn standard</flexsub:eventQuery>
+        <flexsub:subscriptionTime>Element Execution</flexsub:subscriptionTime>
+      </flexsub:subscriptionDefinition>
     </bpmn:extensionElements>
   </bpmn:message>
   <bpmndi:BPMNDiagram id="BPMNDiagram_1">

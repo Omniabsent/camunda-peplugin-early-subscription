@@ -7,7 +7,7 @@ import org.camunda.bpm.engine.delegate.ExecutionListener;
 
 public class CreateBufferListener implements ExecutionListener {
 
-	private final Logger LOGGER = Logger.getLogger(SubscriptionListener.class.getName());
+	private final Logger LOGGER = Logger.getLogger(SubscribeListener.class.getName());
 
 	@Override
 	public void notify(DelegateExecution arg0) throws Exception {

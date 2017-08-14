@@ -8,7 +8,7 @@ import org.camunda.bpm.engine.impl.bpmn.parser.BpmnParseListener;
 import org.camunda.bpm.engine.impl.cfg.ProcessEngineConfigurationImpl;
 import org.camunda.bpm.engine.impl.cfg.ProcessEnginePlugin;
 
-public class MySampleProcessEnginePlugin implements ProcessEnginePlugin {
+public class FlexibleEventSubscriptionPEP implements ProcessEnginePlugin {
 
 	@Override
 	public void preInit(ProcessEngineConfigurationImpl processEngineConfiguration) {
@@ -18,7 +18,7 @@ public class MySampleProcessEnginePlugin implements ProcessEnginePlugin {
 			postParseListeners = new ArrayList<BpmnParseListener>();
 			processEngineConfiguration.setCustomPostBPMNParseListeners(postParseListeners);
 		}
-		postParseListeners.add(new MySampleParseListener());
+		postParseListeners.add(new FlexibleSubscriptionParseListener());
 
 	}
 
