@@ -77,7 +77,7 @@
     <bpmn:extensionElements>
       <flexsub:subscriptionDefinition>
         <flexsub:eventQuery>select on svc task</flexsub:eventQuery>
-        <flexsub:subscriptionTime>Manual</flexsub:subscriptionTime>
+        <flexsub:subscriptionTime>manual</flexsub:subscriptionTime>
         <flexsub:bufferPolicies>
           <flexsub:consumptionPolicy>consume</flexsub:consumptionPolicy>
         </flexsub:bufferPolicies>
@@ -89,7 +89,7 @@
     <bpmn:extensionElements>
       <flexsub:subscriptionDefinition>
         <flexsub:eventQuery>depl</flexsub:eventQuery>
-        <flexsub:subscriptionTime>Process Deployment</flexsub:subscriptionTime>
+        <flexsub:subscriptionTime>process-deployment</flexsub:subscriptionTime>
       </flexsub:subscriptionDefinition>
     </bpmn:extensionElements>
   </bpmn:message>
@@ -97,7 +97,7 @@
     <bpmn:extensionElements>
       <flexsub:subscriptionDefinition>
         <flexsub:eventQuery>inst</flexsub:eventQuery>
-        <flexsub:subscriptionTime>Process Instantiation</flexsub:subscriptionTime>
+        <flexsub:subscriptionTime>process-instantiation</flexsub:subscriptionTime>
       </flexsub:subscriptionDefinition>
     </bpmn:extensionElements>
   </bpmn:message>
@@ -105,7 +105,7 @@
     <bpmn:extensionElements>
       <flexsub:subscriptionDefinition>
         <flexsub:eventQuery>bpmn standard</flexsub:eventQuery>
-        <flexsub:subscriptionTime>Element Execution</flexsub:subscriptionTime>
+        <flexsub:subscriptionTime>element-reached</flexsub:subscriptionTime>
       </flexsub:subscriptionDefinition>
     </bpmn:extensionElements>
   </bpmn:message>

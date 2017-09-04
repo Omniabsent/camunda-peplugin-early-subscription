@@ -8,22 +8,22 @@ import org.camunda.bpm.engine.delegate.ExecutionListener;
 import hpi.bpt.earlysubscription.camunda.engineplugin.SubscriptionDefinition;
 import hpi.bpt.earlysubscription.camunda.engineplugin.SubscriptionEngine;
 
-public class UnsubscribeListener implements ExecutionListener {
+public class RegisterQueryListener implements ExecutionListener {
 
-	private final Logger LOGGER = Logger.getLogger(UnsubscribeListener.class.getName());
+	private final Logger LOGGER = Logger.getLogger(SubscribeListener.class.getName());
 
 	private SubscriptionDefinition subscriptionDefinition;
 
-	public UnsubscribeListener(SubscriptionDefinition sd) {
+	public RegisterQueryListener(SubscriptionDefinition sd) {
 		subscriptionDefinition = sd;
 	}
 
 	@Override
 	public void notify(DelegateExecution dex) throws Exception {
-		SubscriptionEngine.unsubscribeQuery(subscriptionDefinition, dex);
+		SubscriptionEngine.registerQuery(subscriptionDefinition, dex);
 
-		LOGGER.info("my eventQuery is: " + subscriptionDefinition.eventQuery);
+		LOGGER.info("my eventQuery is: " + "???");
+		// execution.getProcessEngineServices()
 
 	}
-
 }

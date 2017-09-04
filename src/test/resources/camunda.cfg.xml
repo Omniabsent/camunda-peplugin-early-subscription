@@ -11,7 +11,7 @@
     </property>
     <property name="processEnginePlugins">
       <list>
-        <bean class="hpi.bpt.earlysubscription.camunda.engineplugin.MySampleProcessEnginePlugin" />
+        <bean class="hpi.bpt.earlysubscription.camunda.engineplugin.FlexibleEventSubscriptionPEP" />
       </list>
     </property>
   </bean>
