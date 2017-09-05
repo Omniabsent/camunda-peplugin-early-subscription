@@ -18,7 +18,7 @@
   <bpmn:message id="Message_0gdrcmt" name="Message_OnDeployment">
     <bpmn:extensionElements>
       <flexsub:subscriptionDefinition>
-        <flexsub:eventQuery>query to subscribe on deployment</flexsub:eventQuery>
+        <flexsub:eventQuery>Select * from TestEvent</flexsub:eventQuery>
         <flexsub:subscriptionTime>process-deployment</flexsub:subscriptionTime>
       </flexsub:subscriptionDefinition>
     </bpmn:extensionElements>
