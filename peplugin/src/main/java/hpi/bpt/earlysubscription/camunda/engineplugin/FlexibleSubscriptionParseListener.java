@@ -83,13 +83,19 @@ public class FlexibleSubscriptionParseListener extends AbstractBpmnParseListener
 
 						// and removeQuery at end of process
 						thisProcess.addListener(ExecutionListener.EVENTNAME_END, new RemoveQueryListener(sd));
+
+						// add subscribe/unsubscribe
+						for (ActivityImpl act : receivingActivities) {
+							act.addListener(ExecutionListener.EVENTNAME_START, new SubscribeListener(sd));
+							act.addListener(ExecutionListener.EVENTNAME_END, new UnsubscribeListener(sd));
+						}
+					} else {
+						// manual subscription outside of process not supported
+						LOGGER.severe(
+								"Subscription Time set to manual, but no subscription task found. Ignored because not supported. Message: "
+										+ messageId);
 					}
 
-					// add subscribe/unsubscribe
-					for (ActivityImpl act : receivingActivities) {
-						act.addListener(ExecutionListener.EVENTNAME_START, new SubscribeListener(sd));
-						act.addListener(ExecutionListener.EVENTNAME_END, new UnsubscribeListener(sd));
-					}
 					break;
 				default:
 					// in every other case registerQuery when element reached

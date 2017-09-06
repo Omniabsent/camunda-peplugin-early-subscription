@@ -44,6 +44,11 @@ public class SubscriptionEngine {
 
 	public static void registerQuery(SubscriptionDefinition sd, DelegateExecution dex) {
 		String intQueryId = getInternalQueryId(sd, dex);
+		// if (queryRepository.containsKey(intQueryId)) {
+		// LOGGER.info("Skipping registration of query because already known: "
+		// + intQueryId);
+		// return;
+		// }
 		LOGGER.info("Registering Query with internal id " + intQueryId);
 
 		// do register
@@ -123,7 +128,7 @@ public class SubscriptionEngine {
 		case SubscriptionEngine.CONST_SUBTIME_INSTANTIATION:
 			return dex.getProcessInstanceId() + "||" + sd.bpmnMessageId;
 		case SubscriptionEngine.CONST_SUBTIME_MANUAL:
-			return sd.bpmnMessageId + "||" + sd.eventQuery;
+			return dex.getProcessInstanceId() + "||" + sd.bpmnMessageId;
 		default:
 			return dex.getActivityInstanceId();
 		}

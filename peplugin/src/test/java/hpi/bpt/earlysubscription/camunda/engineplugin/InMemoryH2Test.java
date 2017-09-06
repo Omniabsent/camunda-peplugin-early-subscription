@@ -124,6 +124,57 @@ public class InMemoryH2Test {
 	}
 
 	@Test
+	@Deployment(resources = "subscribe-on-task.bpmn")
+	public void testSubscribeOnTaskTwoInstances() {
+
+		assertTrue(SubscriptionEngine.queryRepository.size() == 0);
+		assertTrue(SubscriptionEngine.subscriptionRepository.size() == 0);
+
+		ProcessInstance processInstance = processEngine().getRuntimeService()
+				.startProcessInstanceByKey("earlysubscription.camunda.engineplugin.tests.onTask");
+		ProcessInstance processInstance2 = processEngine().getRuntimeService()
+				.startProcessInstanceByKey("earlysubscription.camunda.engineplugin.tests.onTask");
+
+		assertThat(processInstance).task("Task_1um2wc3");
+		assertTrue(SubscriptionEngine.queryRepository.size() == 0);
+		assertTrue(SubscriptionEngine.subscriptionRepository.size() == 0);
+		complete(task()); // complete the user task proceed to subscr task
+
+		assertThat(processInstance).task("Task_0ay21b8");
+		assertTrue(SubscriptionEngine.queryRepository.size() == 1);
+		complete(task());
+
+		assertTrue(SubscriptionEngine.subscriptionRepository.size() == 1);
+
+		// go ahead with instance 2
+		assertThat(processInstance2).task("Task_1um2wc3");
+		assertTrue(SubscriptionEngine.queryRepository.size() == 1);
+		assertTrue(SubscriptionEngine.subscriptionRepository.size() == 1);
+		complete(task()); // complete the user task proceed to subscr task
+
+		assertThat(processInstance2).task("Task_0ay21b8");
+		assertTrue(SubscriptionEngine.queryRepository.size() == 2);
+		assertTrue(SubscriptionEngine.subscriptionRepository.size() == 1);
+
+		// finish instance1
+		processEngine().getRuntimeService().correlateMessage("Message_SubscribeOnTask");
+		assertThat(processInstance).isEnded();
+		assertTrue(SubscriptionEngine.subscriptionRepository.size() == 0);
+		assertTrue(SubscriptionEngine.queryRepository.size() == 1);
+
+		// finish instance2
+		assertThat(processInstance2).task("Task_0ay21b8");
+		complete(task());
+		assertTrue(SubscriptionEngine.subscriptionRepository.size() == 1);
+		assertTrue(SubscriptionEngine.queryRepository.size() == 1);
+		processEngine().getRuntimeService().correlateMessage("Message_SubscribeOnTask");
+		assertThat(processInstance2).isEnded();
+		assertTrue(SubscriptionEngine.subscriptionRepository.size() == 0);
+		assertTrue(SubscriptionEngine.queryRepository.size() == 0);
+
+	}
+
+	@Test
 	@Deployment(resources = "subscribe-when-reached.bpmn")
 	public void testWhenReached() {
 
