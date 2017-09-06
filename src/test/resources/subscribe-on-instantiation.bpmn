@@ -23,7 +23,7 @@
   <bpmn:message id="Message_1gdrcmt" name="Message_OnInstantiation">
     <bpmn:extensionElements>
       <flexsub:subscriptionDefinition>
-        <flexsub:eventQuery>query to subscribe on inst</flexsub:eventQuery>
+        <flexsub:eventQuery>select * from TestEvent</flexsub:eventQuery>
         <flexsub:subscriptionTime>process-instantiation</flexsub:subscriptionTime>
       </flexsub:subscriptionDefinition>
     </bpmn:extensionElements>

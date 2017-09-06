@@ -111,6 +111,7 @@ public class InMemoryH2Test {
 		assertTrue(SubscriptionEngine.queryRepository.size() == 1);
 		complete(task());
 
+		assertTrue(SubscriptionEngine.subscriptionRepository.size() == 1);
 		processEngine().getRuntimeService().correlateMessage("Message_SubscribeOnTask");
 		assertThat(processInstance).isEnded();
 		assertTrue(SubscriptionEngine.subscriptionRepository.size() == 0);

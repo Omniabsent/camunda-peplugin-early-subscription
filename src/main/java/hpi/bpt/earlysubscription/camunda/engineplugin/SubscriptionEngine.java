@@ -77,36 +77,12 @@ public class SubscriptionEngine {
 		jsonPayload.put("processInstanceId", dex.getProcessInstanceId());
 		jsonPayload.put("messageName", sd.bpmnMessageName);
 
-		new SubscriptionEngine().new ASyncSubscribeThread(jsonPayload, UNICORN_BASEURL + extQueryId,
-				getInternalSubscriptionId(dex)).start();
+		LOGGER.info("subscribing...");
+		String extSubscriptionId = doHTTPCall("POST", jsonPayload, UNICORN_BASEURL + extQueryId);
 
-	}
-
-	private class ASyncSubscribeThread extends Thread {
-		String url, internalSubscriptionId;
-		JSONObject pl;
-
-		public ASyncSubscribeThread(JSONObject jsonPayload, String url, String internalSubId) {
-			super();
-			this.pl = jsonPayload;
-			this.url = url;
-			internalSubscriptionId = internalSubId;
-		}
-
-		public void run() {
-			// wait 2 seconds so that camunda starts listening for the event
-			try {
-				Thread.sleep(2000);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
-			String extSubscriptionId = doHTTPCall("POST", pl, url);
-
-			// store uuid
-			subscriptionRepository.put(internalSubscriptionId, extSubscriptionId);
-			LOGGER.info("stored subscription (internal) as external id " + extSubscriptionId);
-		}
-
+		// store uuid
+		subscriptionRepository.put(getInternalSubscriptionId(dex), extSubscriptionId);
+		LOGGER.info("stored subscription (internal) as external id " + extSubscriptionId);
 	}
 
 	public static void unsubscribeQuery(SubscriptionDefinition sd, DelegateExecution dex) {
@@ -116,7 +92,7 @@ public class SubscriptionEngine {
 		String extQueryId = queryRepository.get(qId);
 
 		// do unsubscr
-		String unsuburl = UNICORN_BASEURL + extQueryId + "/" + extSubscriptionId;
+		String unsuburl = UNICORN_BASEURL + "subscriptions/" + extSubscriptionId;
 		doDELETE(unsuburl);
 
 		// remove from repo
@@ -188,16 +164,16 @@ public class SubscriptionEngine {
 
 	}
 
-	public static void doDELETE(String url) {
+	public static void doDELETE(String strurl) {
 		String result = null;
 		try {
-			URL obj = new URL(url);
-			HttpURLConnection con = (HttpURLConnection) obj.openConnection();
-
-			con.setRequestMethod("DELETE");
-			con.setRequestProperty("Content-Type", "application/json");
-
-			con.connect();
+			URL url = new URL(strurl);
+			HttpURLConnection httpURLConnection = null;
+			httpURLConnection = (HttpURLConnection) url.openConnection();
+			httpURLConnection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+			httpURLConnection.setRequestMethod("DELETE");
+			LOGGER.info("Response status of delete call: " + httpURLConnection.getResponseCode());
+			httpURLConnection.disconnect();
 
 		} catch (Exception e) {
 			// e.printStackTrace();

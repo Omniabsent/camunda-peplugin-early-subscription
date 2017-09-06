@@ -23,7 +23,7 @@
   <bpmn:message id="Message_2gdrcmt" name="Message_WhenReached">
     <bpmn:extensionElements>
       <flexsub:subscriptionDefinition>
-        <flexsub:eventQuery>query to subscribe when reached</flexsub:eventQuery>
+        <flexsub:eventQuery>select * from TestEvent</flexsub:eventQuery>
         <flexsub:subscriptionTime>element-reached</flexsub:subscriptionTime>
       </flexsub:subscriptionDefinition>
     </bpmn:extensionElements>
