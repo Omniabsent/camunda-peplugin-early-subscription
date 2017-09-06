@@ -24,12 +24,15 @@ public class FlexibleSubscriptionParseListener extends AbstractBpmnParseListener
 	@Override
 	public void parseRootElement(Element rootElement, List<ProcessDefinitionEntity> processDefinitions) {
 		LOGGER.setLevel(Level.INFO);
-		LOGGER.info("\n\n------- executing parseRootElement -------\n\n");
 
 		// processDefinitions.get(0).getActivities().get(0).addListener(ExecutionListener.EVENTNAME_START,
 		// new SubscribeListener(subscriptionDefinition));
 
+		if (processDefinitions.isEmpty()) {
+			return;
+		}
 		ProcessDefinitionEntity thisProcess = processDefinitions.get(0);
+		LOGGER.info("\n\n------- executing parseRootElement for process " + thisProcess.getKey() + " -------\n\n");
 
 		// get all messages into HashMap<String msgname, Element>
 		List<Element> messageElements = rootElement.elements("message");
@@ -44,10 +47,11 @@ public class FlexibleSubscriptionParseListener extends AbstractBpmnParseListener
 			String messageId = el.attribute("id");
 			// get subscriptionDefinition
 			SubscriptionDefinition sd = getSubscriptionDefinition(el);
-			// get activities that reference this message
-			List<ActivityImpl> receivingActivities = findRefActivities(messageId, rootElement, thisProcess);
 
 			if (sd != null) { // if referenced message has flex-sub-extensions:
+				// get activities that reference this message
+				List<ActivityImpl> receivingActivities = findRefActivities(messageId, rootElement, thisProcess);
+
 				System.out.println("Adding flexsub execution listeners for message " + messageId + "; Subsc. time: "
 						+ sd.subscriptionTime);
 
@@ -188,8 +192,12 @@ public class FlexibleSubscriptionParseListener extends AbstractBpmnParseListener
 	 * @return
 	 */
 	private SubscriptionDefinition getSubscriptionDefinition(Element el) {
+		Element extElements = el.element("extensionElements");
+		if (extElements == null) {
+			return null;
+		}
 
-		Element sdElement = el.element("extensionElements").element("subscriptionDefinition");
+		Element sdElement = extElements.element("subscriptionDefinition");
 		if (sdElement != null) {
 			SubscriptionDefinition sd = new SubscriptionDefinition();
 			// fill with data

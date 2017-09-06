@@ -38,11 +38,15 @@ public class InMemoryH2Test {
 	}
 
 	@Test
+	@Deployment(resources = "message-without-extension.bpmn")
+	public void testDeploymentMessageWithoutExtension() {
+		// do nothing, just test the deployment
+	}
+
+	@Test
 	@Deployment(resources = "process.bpmn")
 	public void testBigProcess() {
 
-		// clean up
-		SubscriptionEngine.queryRepository.clear();
 	}
 
 	@Test
@@ -64,7 +68,7 @@ public class InMemoryH2Test {
 
 		assertThat(processInstance).isEnded();
 
-		// clean up
+		// clean up for queries with subscr. on deployment
 		SubscriptionEngine.queryRepository.clear();
 	}
 
