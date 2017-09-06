@@ -2,6 +2,7 @@ package hpi.bpt.earlysubscription.camunda.engineplugin;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.camunda.bpm.engine.delegate.ExecutionListener;
@@ -22,6 +23,9 @@ public class FlexibleSubscriptionParseListener extends AbstractBpmnParseListener
 
 	@Override
 	public void parseRootElement(Element rootElement, List<ProcessDefinitionEntity> processDefinitions) {
+		LOGGER.setLevel(Level.INFO);
+		LOGGER.info("\n\n------- executing parseRootElement -------\n\n");
+
 		// processDefinitions.get(0).getActivities().get(0).addListener(ExecutionListener.EVENTNAME_START,
 		// new SubscribeListener(subscriptionDefinition));
 
@@ -191,6 +195,7 @@ public class FlexibleSubscriptionParseListener extends AbstractBpmnParseListener
 			// fill with data
 			sd.eventQuery = sdElement.element("eventQuery").getText();
 			sd.bpmnMessageId = el.attribute("id");
+			sd.bpmnMessageName = el.attribute("name");
 
 			sd.subscriptionTime = getTextIfNotNull(sdElement, "subscriptionTime");
 			if (sd.subscriptionTime == null) {

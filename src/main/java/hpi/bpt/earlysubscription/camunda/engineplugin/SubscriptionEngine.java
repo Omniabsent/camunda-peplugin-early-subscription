@@ -6,6 +6,7 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.HashMap;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.camunda.bpm.engine.delegate.DelegateExecution;
@@ -22,6 +23,10 @@ import org.camunda.bpm.engine.impl.util.json.JSONObject;
 public class SubscriptionEngine {
 
 	private final static Logger LOGGER = Logger.getLogger(SubscriptionEngine.class.getName());
+
+	static {
+		LOGGER.setLevel(Level.INFO);
+	}
 
 	public static final String CONST_SUBTIME_DEPLOYMENT = "process-deployment";
 	public static final String CONST_SUBTIME_INSTANTIATION = "process-instantiation";
@@ -70,23 +75,49 @@ public class SubscriptionEngine {
 		JSONObject jsonPayload = new JSONObject();
 		jsonPayload.put("postAddress", CAMUNDA_WEBSERVICEURL);
 		jsonPayload.put("processInstanceId", dex.getProcessInstanceId());
-		jsonPayload.put("messageName", CAMUNDA_WEBSERVICEURL);
+		jsonPayload.put("messageName", sd.bpmnMessageName);
 
-		String extSubscriptionId = doHTTPCall("POST", jsonPayload, UNICORN_BASEURL + extQueryId);
+		new SubscriptionEngine().new ASyncSubscribeThread(jsonPayload, UNICORN_BASEURL + extQueryId,
+				getInternalSubscriptionId(dex)).start();
 
-		// store uuid
-		subscriptionRepository.put(getInternalSubscriptionId(dex), extSubscriptionId);
-		LOGGER.info("stored subscription (internal) as external id " + extSubscriptionId);
+	}
+
+	private class ASyncSubscribeThread extends Thread {
+		String url, internalSubscriptionId;
+		JSONObject pl;
+
+		public ASyncSubscribeThread(JSONObject jsonPayload, String url, String internalSubId) {
+			super();
+			this.pl = jsonPayload;
+			this.url = url;
+			internalSubscriptionId = internalSubId;
+		}
+
+		public void run() {
+			// wait 2 seconds so that camunda starts listening for the event
+			try {
+				Thread.sleep(2000);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+			String extSubscriptionId = doHTTPCall("POST", pl, url);
+
+			// store uuid
+			subscriptionRepository.put(internalSubscriptionId, extSubscriptionId);
+			LOGGER.info("stored subscription (internal) as external id " + extSubscriptionId);
+		}
+
 	}
 
 	public static void unsubscribeQuery(SubscriptionDefinition sd, DelegateExecution dex) {
 		String qId = getInternalQueryId(sd, dex);
-		LOGGER.info("Unsubscribing from Query " + qId);
+		LOGGER.info("Unsubscribing from Query (internalId) " + qId);
 		String extSubscriptionId = subscriptionRepository.get(getInternalSubscriptionId(dex));
 		String extQueryId = queryRepository.get(qId);
 
 		// do unsubscr
-		doDELETE(UNICORN_BASEURL + extQueryId + "/" + extSubscriptionId);
+		String unsuburl = UNICORN_BASEURL + extQueryId + "/" + extSubscriptionId;
+		doDELETE(unsuburl);
 
 		// remove from repo
 		subscriptionRepository.remove(getInternalSubscriptionId(dex));
@@ -165,6 +196,8 @@ public class SubscriptionEngine {
 
 			con.setRequestMethod("DELETE");
 			con.setRequestProperty("Content-Type", "application/json");
+
+			con.connect();
 
 		} catch (Exception e) {
 			// e.printStackTrace();

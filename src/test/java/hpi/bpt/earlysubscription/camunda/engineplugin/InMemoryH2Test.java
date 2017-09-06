@@ -47,7 +47,7 @@ public class InMemoryH2Test {
 
 	@Test
 	@Deployment(resources = "subscribe-on-deployment.bpmn")
-	public void testOnDeployment() {
+	public void testOnDeployment() throws InterruptedException {
 		// check that subscriptionEngine queryRepo has 1 entry
 		assertTrue(SubscriptionEngine.queryRepository.size() == 1);
 		assertTrue(SubscriptionEngine.subscriptionRepository.size() == 0);
@@ -55,6 +55,7 @@ public class InMemoryH2Test {
 		ProcessInstance processInstance = processEngine().getRuntimeService()
 				.startProcessInstanceByKey("earlysubscription.camunda.engineplugin.tests.onDeployment");
 
+		Thread.sleep(2500); // wait for the async subscription to finish
 		assertTrue(SubscriptionEngine.subscriptionRepository.size() == 1);
 
 		processEngine().getRuntimeService().correlateMessage("Message_OnDeployment");

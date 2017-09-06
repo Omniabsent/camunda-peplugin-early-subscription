@@ -22,7 +22,6 @@ public class RegisterQueryListener implements ExecutionListener {
 	public void notify(DelegateExecution dex) throws Exception {
 		SubscriptionEngine.registerQuery(subscriptionDefinition, dex);
 
-		LOGGER.info("my eventQuery is: " + "???");
 		// execution.getProcessEngineServices()
 
 	}

@@ -21,9 +21,6 @@ public class RemoveQueryListener implements ExecutionListener {
 	@Override
 	public void notify(DelegateExecution dex) throws Exception {
 		SubscriptionEngine.removeQuery(subscriptionDefinition, dex);
-
-		LOGGER.info("my eventQuery is: " + subscriptionDefinition.eventQuery);
-
 	}
 
 }
