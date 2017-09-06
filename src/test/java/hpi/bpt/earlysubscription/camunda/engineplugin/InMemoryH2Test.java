@@ -92,6 +92,32 @@ public class InMemoryH2Test {
 	}
 
 	@Test
+	@Deployment(resources = "subscribe-on-task.bpmn")
+	public void testSubscribeOnTask() {
+
+		assertTrue(SubscriptionEngine.queryRepository.size() == 0);
+		assertTrue(SubscriptionEngine.subscriptionRepository.size() == 0);
+
+		ProcessInstance processInstance = processEngine().getRuntimeService()
+				.startProcessInstanceByKey("earlysubscription.camunda.engineplugin.tests.onTask");
+
+		assertThat(processInstance).task("Task_1um2wc3");
+		assertTrue(SubscriptionEngine.queryRepository.size() == 0);
+		assertTrue(SubscriptionEngine.subscriptionRepository.size() == 0);
+		complete(task()); // complete the user task proceed to subscr task
+
+		assertThat(processInstance).task("Task_0ay21b8");
+		assertTrue(SubscriptionEngine.queryRepository.size() == 1);
+		complete(task());
+
+		processEngine().getRuntimeService().correlateMessage("Message_SubscribeOnTask");
+		assertThat(processInstance).isEnded();
+		assertTrue(SubscriptionEngine.subscriptionRepository.size() == 0);
+		assertTrue(SubscriptionEngine.queryRepository.size() == 0);
+
+	}
+
+	@Test
 	@Deployment(resources = "subscribe-when-reached.bpmn")
 	public void testWhenReached() {
 

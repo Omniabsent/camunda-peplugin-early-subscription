@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" id="Definitions_1" xmlns:flexsub="http://www.extensions.bpmn/flexsub" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="1.6.0">
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:flexsub="http://www.extensions.bpmn/flexsub" id="Definitions_1" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="1.6.0">
   <bpmn:process id="earlysubscription.camunda.engineplugin" name="earlysubscription.camunda.engineplugin" isExecutable="true">
     <bpmn:startEvent id="StartEventProcessStarted" name="Process&#10;started">
       <bpmn:outgoing>SequenceFlow1</bpmn:outgoing>
@@ -50,15 +50,6 @@
       <bpmn:messageEventDefinition messageRef="Message_05qgbwh" />
     </bpmn:intermediateCatchEvent>
     <bpmn:sequenceFlow id="SequenceFlow_1kiberh" sourceRef="ExclusiveGateway_1r5hqy3" targetRef="IntermediateThrowEvent_1c0zbwr" />
-    <bpmn:serviceTask id="Task_0f4srr4" name="subscribe to eurotunnel" camunda:expression="println &#34;Mandatory expression of serviceTask executed.&#34;">
-      <bpmn:extensionElements>
-        <camunda:properties>
-          <camunda:property name="messageId" value="Message_0cdznnq" />
-        </camunda:properties>
-      </bpmn:extensionElements>
-      <bpmn:incoming>SequenceFlow1</bpmn:incoming>
-      <bpmn:outgoing>SequenceFlow_0bepw69</bpmn:outgoing>
-    </bpmn:serviceTask>
     <bpmn:sequenceFlow id="SequenceFlow_13hd23h" sourceRef="Task_receive" targetRef="EndEventProcessEnded" />
     <bpmn:receiveTask id="Task_receive" name="receive" messageRef="Message_0kvs0kt">
       <bpmn:incoming>SequenceFlow_0i38tx2</bpmn:incoming>
@@ -72,6 +63,15 @@
       <bpmn:outgoing>SequenceFlow_1385wii</bpmn:outgoing>
       <bpmn:messageEventDefinition messageRef="Message_03jqjaw" />
     </bpmn:boundaryEvent>
+    <bpmn:task id="Task_0f4srr4" name="subscribe to eurotunnel">
+      <bpmn:extensionElements>
+        <camunda:properties>
+          <camunda:property name="flexsub.messageId" value="Message_0cdznnq" />
+        </camunda:properties>
+      </bpmn:extensionElements>
+      <bpmn:incoming>SequenceFlow1</bpmn:incoming>
+      <bpmn:outgoing>SequenceFlow_0bepw69</bpmn:outgoing>
+    </bpmn:task>
   </bpmn:process>
   <bpmn:message id="Message_0cdznnq" name="Msg-Subscr-On-SvcTask">
     <bpmn:extensionElements>
@@ -83,7 +83,6 @@
         </flexsub:bufferPolicies>
       </flexsub:subscriptionDefinition>
     </bpmn:extensionElements>
-
   </bpmn:message>
   <bpmn:message id="Message_03jqjaw" name="Msg-Subscr-On-Depl">
     <bpmn:extensionElements>
@@ -242,9 +241,6 @@
           <dc:Bounds x="665" y="83.5" width="0" height="0" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNShape id="ServiceTask_05k1eyr_di" bpmnElement="Task_0f4srr4">
-        <dc:Bounds x="282" y="80" width="100" height="80" />
-      </bpmndi:BPMNShape>
       <bpmndi:BPMNEdge id="SequenceFlow_13hd23h_di" bpmnElement="SequenceFlow_13hd23h">
         <di:waypoint xsi:type="dc:Point" x="995" y="120" />
         <di:waypoint xsi:type="dc:Point" x="1078" y="120" />
@@ -269,6 +265,9 @@
         <bpmndi:BPMNLabel>
           <dc:Bounds x="948" y="178" width="0" height="0" />
         </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_0m82ien_di" bpmnElement="Task_0f4srr4">
+        <dc:Bounds x="282" y="80" width="100" height="80" />
       </bpmndi:BPMNShape>
     </bpmndi:BPMNPlane>
   </bpmndi:BPMNDiagram>

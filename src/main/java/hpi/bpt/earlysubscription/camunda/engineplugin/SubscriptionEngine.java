@@ -150,7 +150,7 @@ public class SubscriptionEngine {
 			// print result
 			result = response.toString();
 		} catch (Exception e) {
-			e.printStackTrace();
+			// e.printStackTrace();
 			LOGGER.info("Error while HTTP call: " + e.getMessage());
 		}
 		return result;
@@ -167,7 +167,7 @@ public class SubscriptionEngine {
 			con.setRequestProperty("Content-Type", "application/json");
 
 		} catch (Exception e) {
-			e.printStackTrace();
+			// e.printStackTrace();
 			LOGGER.info("Error while HTTP DELETE: " + e.getMessage());
 		}
 	}

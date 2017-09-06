@@ -9,7 +9,6 @@ import org.camunda.bpm.engine.impl.bpmn.parser.AbstractBpmnParseListener;
 import org.camunda.bpm.engine.impl.bpmn.parser.BpmnParseListener;
 import org.camunda.bpm.engine.impl.persistence.entity.ProcessDefinitionEntity;
 import org.camunda.bpm.engine.impl.pvm.process.ActivityImpl;
-import org.camunda.bpm.engine.impl.pvm.process.ScopeImpl;
 import org.camunda.bpm.engine.impl.util.xml.Element;
 
 import hpi.bpt.earlysubscription.camunda.engineplugin.executionlisteners.RegisterQueryListener;
@@ -20,32 +19,6 @@ import hpi.bpt.earlysubscription.camunda.engineplugin.executionlisteners.Unsubsc
 public class FlexibleSubscriptionParseListener extends AbstractBpmnParseListener implements BpmnParseListener {
 
 	private final Logger LOGGER = Logger.getLogger(FlexibleSubscriptionParseListener.class.getName());
-
-	@Override
-	public void parseStartEvent(Element startEventElement, ScopeImpl scope, ActivityImpl startEvent) {
-		// at end: execute createBuffer for all Messages with subscribe on Inst
-
-		LOGGER.info("Parsing Start Event " + ", activtyId=" + startEvent.getId() + ", activtyName='"
-				+ startEvent.getName() + "'" + ", scopeId=" + scope.getId() + ", scopeName=" + scope.getName());
-	}
-
-	@Override
-	public void parseServiceTask(Element serviceTaskElement, ScopeImpl scope, ActivityImpl activity) {
-		// if extension available, set delegate; this way camunda may not spawn
-		// an error
-
-		// attach createBufferListener if flexsub extension is present
-
-	}
-
-	@Override
-	public void parseIntermediateCatchEvent(Element intermediateEventElement, ScopeImpl scope, ActivityImpl activity) {
-		// start: attach subscribeListener
-		// end: attach unsubscr. listener
-
-		// CANNOT get the query value from the referenced message element
-
-	}
 
 	@Override
 	public void parseRootElement(Element rootElement, List<ProcessDefinitionEntity> processDefinitions) {
@@ -68,7 +41,7 @@ public class FlexibleSubscriptionParseListener extends AbstractBpmnParseListener
 			// get subscriptionDefinition
 			SubscriptionDefinition sd = getSubscriptionDefinition(el);
 			// get activities that reference this message
-			List<ActivityImpl> referencingActivities = findRefActivities(messageId, rootElement, thisProcess);
+			List<ActivityImpl> receivingActivities = findRefActivities(messageId, rootElement, thisProcess);
 
 			if (sd != null) { // if referenced message has flex-sub-extensions:
 				System.out.println("Adding flexsub execution listeners for message " + messageId + "; Subsc. time: "
@@ -77,14 +50,14 @@ public class FlexibleSubscriptionParseListener extends AbstractBpmnParseListener
 				switch (sd.subscriptionTime) {
 				case SubscriptionEngine.CONST_SUBTIME_DEPLOYMENT:
 					SubscriptionEngine.registerQuery(sd, null);
-					for (ActivityImpl act : referencingActivities) {
+					for (ActivityImpl act : receivingActivities) {
 						act.addListener(ExecutionListener.EVENTNAME_START, new SubscribeListener(sd));
 						act.addListener(ExecutionListener.EVENTNAME_END, new UnsubscribeListener(sd));
 					}
 					break;
 				case SubscriptionEngine.CONST_SUBTIME_INSTANTIATION:
 					thisProcess.addListener(ExecutionListener.EVENTNAME_START, new RegisterQueryListener(sd));
-					for (ActivityImpl act : referencingActivities) {
+					for (ActivityImpl act : receivingActivities) {
 						act.addListener(ExecutionListener.EVENTNAME_START, new SubscribeListener(sd));
 						act.addListener(ExecutionListener.EVENTNAME_END, new UnsubscribeListener(sd));
 					}
@@ -92,9 +65,20 @@ public class FlexibleSubscriptionParseListener extends AbstractBpmnParseListener
 
 					break;
 				case SubscriptionEngine.CONST_SUBTIME_MANUAL:
-					// no need to do register/remove query
+					// if there is a subscription task for this message
+					List<ActivityImpl> subscriptionTasks = findSubscriptionTasks(messageId, rootElement, thisProcess);
+					if (!subscriptionTasks.isEmpty()) {
+						// then do registerQuery at each of these tasks
+						for (ActivityImpl act : subscriptionTasks) {
+							act.addListener(ExecutionListener.EVENTNAME_START, new RegisterQueryListener(sd));
+						}
 
-					for (ActivityImpl act : referencingActivities) {
+						// and removeQuery at end of process
+						thisProcess.addListener(ExecutionListener.EVENTNAME_END, new RemoveQueryListener(sd));
+					}
+
+					// add subscribe/unsubscribe
+					for (ActivityImpl act : receivingActivities) {
 						act.addListener(ExecutionListener.EVENTNAME_START, new SubscribeListener(sd));
 						act.addListener(ExecutionListener.EVENTNAME_END, new UnsubscribeListener(sd));
 					}
@@ -103,7 +87,7 @@ public class FlexibleSubscriptionParseListener extends AbstractBpmnParseListener
 					// in every other case registerQuery when element reached
 					// removeQuery at end
 					// (element-reached, missing or unknown value)
-					for (ActivityImpl act : referencingActivities) {
+					for (ActivityImpl act : receivingActivities) {
 						act.addListener(ExecutionListener.EVENTNAME_START, new RegisterQueryListener(sd));
 						act.addListener(ExecutionListener.EVENTNAME_START, new SubscribeListener(sd));
 						act.addListener(ExecutionListener.EVENTNAME_END, new UnsubscribeListener(sd));
@@ -128,20 +112,49 @@ public class FlexibleSubscriptionParseListener extends AbstractBpmnParseListener
 
 	}
 
-	private List<ActivityImpl> findRefActivities(String messageId, Element rootElement,
+	private List<ActivityImpl> findSubscriptionTasks(String messageId, Element rootElement,
 			ProcessDefinitionEntity processDef) {
-		// TODO: there could be a method get ref elements by msg id
-		// each boundary message event
-		// each receive task
-		// each intermediate message catch event
 		ArrayList<ActivityImpl> activities = new ArrayList<ActivityImpl>();
 
+		List<Element> els = elementsByTagRecursive(rootElement, "task");
+
+		for (Element el : els) {
+			String refMessageId = getCamundaPropertyValue(el, "flexsub.messageId");
+			if (refMessageId != null) {
+				// el subscribes to refMessageId
+				String aId = el.attribute("id");
+				activities.add(processDef.findActivity(aId));
+			}
+		}
+
+		return activities;
+	}
+
+	private List<ActivityImpl> findRefActivities(String messageId, Element rootElement,
+			ProcessDefinitionEntity processDef) {
+		ArrayList<ActivityImpl> activities = new ArrayList<ActivityImpl>();
+
+		// each boundary message event
+		// each intermediate message catch event
 		List<Element> els = elementsByTagRecursive(rootElement, "intermediateCatchEvent");
 		els.addAll(elementsByTagRecursive(rootElement, "boundaryEvent"));
 
 		for (Element el : els) {
 			// extract 'messageRef' from "messageEventDefinition"
 			String mref = el.element("messageEventDefinition").attribute("messageRef");
+
+			if (mref.equals(messageId)) {
+				String activityId = el.attribute("id");
+				ActivityImpl ai = processDef.findActivity(activityId);
+				activities.add(ai);
+			}
+		}
+
+		// also add receiveTasks
+		els = elementsByTagRecursive(rootElement, "receiveTask");
+		for (Element el : els) {
+			// extract 'messageRef' from "messageEventDefinition"
+			String mref = el.attribute("messageRef");
 
 			if (mref.equals(messageId)) {
 				String activityId = el.attribute("id");
@@ -217,7 +230,7 @@ public class FlexibleSubscriptionParseListener extends AbstractBpmnParseListener
 		return result;
 	}
 
-	private String getExtensionValue(Element el, String propertyName) {
+	private String getCamundaPropertyValue(Element el, String propertyName) {
 		// get the <extensionElements ...> element from the service task
 		Element extensionElement = el.element("extensionElements");
 		if (extensionElement != null) {
@@ -226,11 +239,12 @@ public class FlexibleSubscriptionParseListener extends AbstractBpmnParseListener
 			Element propertiesElement = extensionElement.element("properties");
 			if (propertiesElement != null) {
 
-				// get list of <camunda:property ...> elements from the service
-				// task
-				Element prop = propertiesElement.element("propertyName");
-				if (prop != null) {
-					return prop.getText();
+				// get list of <camunda:property ...> elements from the
+				List<Element> props = propertiesElement.elements("property");
+				for (Element e : props) {
+					if (propertyName.equals(e.attribute("name"))) {
+						return e.attribute("value");
+					}
 				}
 			}
 		}
