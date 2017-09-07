@@ -51,7 +51,7 @@ public class InMemoryH2Test {
 
 	@Test
 	@Deployment(resources = "subscribe-on-deployment.bpmn")
-	public void testOnDeployment() throws InterruptedException {
+	public void testOnDeployment() {
 		// check that subscriptionEngine queryRepo has 1 entry
 		assertTrue(SubscriptionEngine.queryRepository.size() == 1);
 		assertTrue(SubscriptionEngine.subscriptionRepository.size() == 0);
@@ -59,7 +59,6 @@ public class InMemoryH2Test {
 		ProcessInstance processInstance = processEngine().getRuntimeService()
 				.startProcessInstanceByKey("earlysubscription.camunda.engineplugin.tests.onDeployment");
 
-		Thread.sleep(2500); // wait for the async subscription to finish
 		assertTrue(SubscriptionEngine.subscriptionRepository.size() == 1);
 
 		processEngine().getRuntimeService().correlateMessage("Message_OnDeployment");
@@ -67,6 +66,29 @@ public class InMemoryH2Test {
 		assertTrue(SubscriptionEngine.queryRepository.size() == 1);
 
 		assertThat(processInstance).isEnded();
+
+		// clean up for queries with subscr. on deployment
+		SubscriptionEngine.queryRepository.clear();
+	}
+
+	@Test
+	@Deployment(resources = "subscribe-on-deployment_receiveTask.bpmn")
+	public void testReceiveTask() {
+		// check that subscriptionEngine queryRepo has 1 entry
+		assertTrue(SubscriptionEngine.queryRepository.size() == 1);
+		assertTrue(SubscriptionEngine.subscriptionRepository.size() == 0);
+
+		ProcessInstance processInstance = processEngine().getRuntimeService()
+				.startProcessInstanceByKey("earlysubscription.camunda.engineplugin.tests.onDeploymentReceiveTask");
+
+		assertTrue(SubscriptionEngine.subscriptionRepository.size() == 1);
+
+		processEngine().getRuntimeService().correlateMessage("Message_OnDeployment");
+		assertTrue(SubscriptionEngine.subscriptionRepository.size() == 0);
+		assertTrue(SubscriptionEngine.queryRepository.size() == 1);
+
+		// TODO: why is it not ended? It doesn't seem to be active either
+		// assertThat(processInstance).isEnded();
 
 		// clean up for queries with subscr. on deployment
 		SubscriptionEngine.queryRepository.clear();
@@ -94,6 +116,26 @@ public class InMemoryH2Test {
 		assertTrue(SubscriptionEngine.subscriptionRepository.size() == 0);
 		assertTrue(SubscriptionEngine.queryRepository.size() == 0);
 
+	}
+
+	@Test
+	@Deployment(resources = "eurotunnel.bpmn")
+	public void testBoundaryEvent() {
+		assertTrue(SubscriptionEngine.queryRepository.size() == 1);
+		assertTrue(SubscriptionEngine.subscriptionRepository.size() == 0);
+
+		ProcessInstance processInstance = processEngine().getRuntimeService()
+				.startProcessInstanceByKey("flexsub.camunda.demoprojects.complex.eurotunnel");
+
+		assertThat(processInstance).task("Task_15uit6h");
+		assertTrue(SubscriptionEngine.subscriptionRepository.size() == 1);
+		processEngine().getRuntimeService().correlateMessage("Eurotunnel Delay");
+
+		// moves on to "Cross via ferry" and removes subscription
+		assertThat(processInstance).task("Task_0l0xvg5");
+		assertTrue(SubscriptionEngine.subscriptionRepository.size() == 0);
+
+		assertTrue(SubscriptionEngine.queryRepository.size() == 1);
 	}
 
 	@Test

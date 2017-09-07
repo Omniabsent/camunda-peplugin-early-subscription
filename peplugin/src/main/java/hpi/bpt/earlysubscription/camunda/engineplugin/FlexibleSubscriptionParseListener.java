@@ -148,10 +148,8 @@ public class FlexibleSubscriptionParseListener extends AbstractBpmnParseListener
 			ProcessDefinitionEntity processDef) {
 		ArrayList<ActivityImpl> activities = new ArrayList<ActivityImpl>();
 
-		// each boundary message event
 		// each intermediate message catch event
 		List<Element> els = elementsByTagRecursive(rootElement, "intermediateCatchEvent");
-		els.addAll(elementsByTagRecursive(rootElement, "boundaryEvent"));
 
 		for (Element el : els) {
 			// extract 'messageRef' from "messageEventDefinition"
@@ -159,6 +157,20 @@ public class FlexibleSubscriptionParseListener extends AbstractBpmnParseListener
 
 			if (mref.equals(messageId)) {
 				String activityId = el.attribute("id");
+				ActivityImpl ai = processDef.findActivity(activityId);
+				activities.add(ai);
+			}
+		}
+
+		// each boundary event
+		els = elementsByTagRecursive(rootElement, "boundaryEvent");
+		for (Element el : els) {
+			// extract 'messageRef' from "messageEventDefinition"
+			String mref = el.element("messageEventDefinition").attribute("messageRef");
+
+			if (mref.equals(messageId)) {
+				// we attach the listeners to the parent activity
+				String activityId = el.attribute("attachedToRef");
 				ActivityImpl ai = processDef.findActivity(activityId);
 				activities.add(ai);
 			}
