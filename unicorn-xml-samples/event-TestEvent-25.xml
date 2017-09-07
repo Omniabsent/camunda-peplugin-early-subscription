@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<cpoi xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="TestEvent.xsd">
+	<Timestamp>2017-06-04T13:15:41</Timestamp>
+	<TestValue>25.0</TestValue>
+</cpoi>
