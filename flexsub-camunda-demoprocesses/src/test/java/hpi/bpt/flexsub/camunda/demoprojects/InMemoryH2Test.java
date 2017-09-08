@@ -34,7 +34,7 @@ public class InMemoryH2Test {
 	 */
 	@Test
 	@Deployment(resources = { "subscribe-on-deployment.bpmn", "subscribe-on-instantiation.bpmn",
-			"flight-booking-consume-buffer.bpmn", "eurotunnel.bpmn" })
+			"flight-booking-consume-buffer.bpmn", "eurotunnel.bpmn", "retail_customer.bpmn", "retail_retailer.bpmn" })
 	public void testParsingAndDeployment() {
 		// nothing is done here, as we just want to check for exceptions during
 		// deployment

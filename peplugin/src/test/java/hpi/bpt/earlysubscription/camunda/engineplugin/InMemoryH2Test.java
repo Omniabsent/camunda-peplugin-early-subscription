@@ -8,6 +8,7 @@ import static org.camunda.bpm.engine.test.assertions.ProcessEngineTests.task;
 import static org.junit.Assert.assertTrue;
 
 import org.apache.ibatis.logging.LogFactory;
+import org.camunda.bpm.engine.TaskService;
 import org.camunda.bpm.engine.runtime.ProcessInstance;
 import org.camunda.bpm.engine.test.Deployment;
 import org.camunda.bpm.engine.test.ProcessEngineRule;
@@ -63,6 +64,55 @@ public class InMemoryH2Test {
 
 		// clean up for queries with subscr. on deployment
 		SubscriptionEngine.queryRepository.clear();
+	}
+
+	@Test
+	@Deployment(resources = { "retail_customer.bpmn", "retail_retailer.bpmn" })
+	public void testRetailProcess() {
+		TaskService ts = processEngine().getTaskService();
+
+		ProcessInstance processInstanceCustomer = processEngine().getRuntimeService()
+				.startProcessInstanceByKey("flexsub.camunda.demoprojects.complex.retail.customer");
+
+		// CUSTOMER
+		assertThat(processInstanceCustomer).task("Task_0t7yqxy");
+		assertTrue(SubscriptionEngine.queryRepository.size() == 0);
+		assertTrue(SubscriptionEngine.subscriptionRepository.size() == 0);
+		complete(task()); // complete task "Request Quote"
+		// sends quote request
+		// ts.complete(ts.createTaskQuery().active().processInstanceId(processInstanceCustomer.getId()).list().get(0).getId());
+
+		// RETAILER
+		ProcessInstance processInstanceRetailer = (ProcessInstance) processEngine().getRuntimeService()
+				.createExecutionQuery().processDefinitionKey("flexsub.camunda.demoprojects.complex.retail.retailer")
+				.list().get(0);
+		assertThat(processInstanceRetailer).task("Task_0l1sh5s");
+		complete(task()); // complete task "Prepare Quote"
+		// subscribes to delays
+		// sends quote
+		assertThat(processInstanceRetailer).task("IntermediateThrowEvent_1ua0m5w"); // catching!
+
+		// CUSTOMER
+		assertThat(processInstanceCustomer).task("Task_0bqa34h");
+		complete(task()); // complete task "Accept Quote"
+		assertThat(processInstanceCustomer).task("Task_1isz5s4");
+		complete(task()); // complete task "Initiate Payment"
+		assertThat(processInstanceCustomer).isEnded();
+
+		// RETAILER
+		assertThat(processInstanceRetailer).task("Task_1y257tw");
+		processEngine().getRuntimeService().correlateMessage("Message_ShipmentDelay");
+		// now 2 active tasks
+		assertTrue(ts.createTaskQuery().active().processInstanceId(processInstanceRetailer.getId()).list().size() == 2);
+		// complete "inform about late shipment"
+		ts.complete(ts.createTaskQuery().active().taskDefinitionKey("Task_1jjispb")
+				.processInstanceId(processInstanceRetailer.getId()).list().get(0).getId());
+
+		complete(task()); // complete task "Prepare shipping"
+
+		assertThat(processInstanceRetailer).task("Task_1to2mqi");
+		complete(task()); // complete task "ship"
+		assertThat(processInstanceRetailer).isEnded();
 	}
 
 	@Test
