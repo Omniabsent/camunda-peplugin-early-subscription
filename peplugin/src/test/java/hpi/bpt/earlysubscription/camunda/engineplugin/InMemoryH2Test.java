@@ -44,12 +44,6 @@ public class InMemoryH2Test {
 	}
 
 	@Test
-	@Deployment(resources = "process.bpmn")
-	public void testBigProcess() {
-
-	}
-
-	@Test
 	@Deployment(resources = "subscribe-on-deployment.bpmn")
 	public void testOnDeployment() {
 		// check that subscriptionEngine queryRepo has 1 entry
@@ -79,7 +73,7 @@ public class InMemoryH2Test {
 		assertTrue(SubscriptionEngine.subscriptionRepository.size() == 0);
 
 		ProcessInstance processInstance = processEngine().getRuntimeService()
-				.startProcessInstanceByKey("earlysubscription.camunda.engineplugin.tests.onDeploymentReceiveTask");
+				.startProcessInstanceByKey("earlysubscription.camunda.engineplugin.tests.receiveTask");
 
 		assertTrue(SubscriptionEngine.subscriptionRepository.size() == 1);
 
@@ -87,8 +81,7 @@ public class InMemoryH2Test {
 		assertTrue(SubscriptionEngine.subscriptionRepository.size() == 0);
 		assertTrue(SubscriptionEngine.queryRepository.size() == 1);
 
-		// TODO: why is it not ended? It doesn't seem to be active either
-		// assertThat(processInstance).isEnded();
+		assertThat(processInstance).isEnded();
 
 		// clean up for queries with subscr. on deployment
 		SubscriptionEngine.queryRepository.clear();
